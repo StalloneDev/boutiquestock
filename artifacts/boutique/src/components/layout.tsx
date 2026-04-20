@@ -29,11 +29,15 @@ export function Layout({ children }: LayoutProps) {
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/pos", label: "POS", icon: ShoppingCart },
     { href: "/products", label: "Products", icon: Package },
     { href: "/categories", label: "Categories", icon: Tags },
-    { href: "/sales", label: "Sales", icon: ShoppingCart },
+    { href: "/sales", label: "Sales History", icon: History },
+    { href: "/purchase-orders", label: "Purchase Orders", icon: PlusCircle },
     { href: "/stock-entries", label: "Restock", icon: ArrowDownUp },
-    { href: "/history", label: "History", icon: History },
+    { href: "/suppliers", label: "Suppliers", icon: LayoutDashboard }, // You can swap with a better icon if imported
+    { href: "/margins", label: "Margins", icon: Activity },
+    { href: "/history", label: "System History", icon: History },
   ];
 
   return (

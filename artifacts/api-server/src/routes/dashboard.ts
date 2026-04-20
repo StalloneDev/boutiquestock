@@ -118,4 +118,100 @@ router.get("/recent-activity", async (req, res): Promise<void> => {
   res.json(activity);
 });
 
+router.get("/margins", async (req, res): Promise<void> => {
+  const products = await db
+    .select({
+      categoryId: productsTable.categoryId,
+      categoryName: categoriesTable.name,
+      quantity: productsTable.quantity,
+      unitCostPrice: productsTable.unitCostPrice,
+      unitSalePrice: productsTable.unitSalePrice,
+    })
+    .from(productsTable)
+    .leftJoin(categoriesTable, eq(productsTable.categoryId, categoriesTable.id));
+
+  const sales = await db
+    .select({
+      productId: salesTable.productId,
+      quantity: salesTable.quantity,
+      totalAmount: salesTable.totalAmount,
+    })
+    .from(salesTable);
+
+  const byCategory: Record<string, {
+    categoryId: number | null;
+    categoryName: string;
+    productCount: number;
+    totalCostValue: number;
+    totalSaleValue: number;
+    totalUnitsSold: number;
+    totalRevenue: number;
+  }> = {};
+
+  for (const p of products) {
+    const key = p.categoryName ?? "Sans catégorie";
+    if (!byCategory[key]) {
+      byCategory[key] = {
+        categoryId: p.categoryId,
+        categoryName: key,
+        productCount: 0,
+        totalCostValue: 0,
+        totalSaleValue: 0,
+        totalUnitsSold: 0,
+        totalRevenue: 0,
+      };
+    }
+    byCategory[key].productCount++;
+    const costPrice = p.unitCostPrice ? parseFloat(p.unitCostPrice) : 0;
+    const salePrice = p.unitSalePrice ? parseFloat(p.unitSalePrice) : 0;
+    byCategory[key].totalCostValue += costPrice * p.quantity;
+    byCategory[key].totalSaleValue += salePrice * p.quantity;
+  }
+
+  const salesByCat: Record<string, { unitsSold: number; revenue: number }> = {};
+
+  const allProducts = await db
+    .select({
+      id: productsTable.id,
+      categoryName: categoriesTable.name,
+    })
+    .from(productsTable)
+    .leftJoin(categoriesTable, eq(productsTable.categoryId, categoriesTable.id));
+
+  const productCatLookup: Record<number, string> = {};
+  for (const p of allProducts) {
+    productCatLookup[p.id] = p.categoryName ?? "Sans catégorie";
+  }
+
+  for (const s of sales) {
+    const catName = productCatLookup[s.productId] ?? "Sans catégorie";
+    if (!salesByCat[catName]) salesByCat[catName] = { unitsSold: 0, revenue: 0 };
+    salesByCat[catName].unitsSold += s.quantity;
+    salesByCat[catName].revenue += parseFloat(s.totalAmount);
+  }
+
+  for (const key of Object.keys(byCategory)) {
+    byCategory[key].totalUnitsSold = salesByCat[key]?.unitsSold ?? 0;
+    byCategory[key].totalRevenue = salesByCat[key]?.revenue ?? 0;
+  }
+
+  const result = Object.values(byCategory).map((cat) => {
+    const totalProfit = cat.totalSaleValue - cat.totalCostValue;
+    const marginPercent = cat.totalSaleValue > 0 ? (totalProfit / cat.totalSaleValue) * 100 : 0;
+    return {
+      categoryId: cat.categoryId,
+      categoryName: cat.categoryName,
+      productCount: cat.productCount,
+      totalCostValue: cat.totalCostValue,
+      totalSaleValue: cat.totalSaleValue,
+      totalProfit,
+      marginPercent: Math.round(marginPercent * 100) / 100,
+      totalUnitsSold: cat.totalUnitsSold,
+      totalRevenue: cat.totalRevenue,
+    };
+  }).sort((a, b) => b.totalProfit - a.totalProfit);
+
+  res.json(result);
+});
+
 export default router;

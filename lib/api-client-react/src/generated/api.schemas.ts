@@ -153,6 +153,134 @@ export interface ActivityItem {
   createdAt: string;
 }
 
+export interface MarginStat {
+  categoryId?: number | null;
+  categoryName: string;
+  productCount: number;
+  totalCostValue: number;
+  totalSaleValue: number;
+  totalProfit: number;
+  marginPercent: number;
+  totalUnitsSold: number;
+  totalRevenue: number;
+}
+
+export interface PosCheckoutItem {
+  productId: number;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface PosCheckoutBody {
+  items: PosCheckoutItem[];
+  notes?: string | null;
+}
+
+export interface PosCheckoutResultItem {
+  saleId: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+}
+
+export interface PosCheckoutResult {
+  items: PosCheckoutResultItem[];
+  grandTotal: number;
+  itemCount: number;
+}
+
+export interface Supplier {
+  id: number;
+  name: string;
+  contact?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateSupplierBody {
+  name: string;
+  contact?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  notes?: string | null;
+}
+
+export interface PurchaseOrderItem {
+  id: number;
+  purchaseOrderId: number;
+  productId: number;
+  productName: string;
+  quantityOrdered: number;
+  quantityReceived: number;
+  unitCost: number;
+  totalCost: number;
+}
+
+export interface CreatePurchaseOrderItemBody {
+  productId: number;
+  quantityOrdered: number;
+  unitCost: number;
+}
+
+export type PurchaseOrderStatus =
+  (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus];
+
+export const PurchaseOrderStatus = {
+  draft: "draft",
+  ordered: "ordered",
+  received: "received",
+  cancelled: "cancelled",
+} as const;
+
+export interface PurchaseOrder {
+  id: number;
+  supplierId?: number | null;
+  supplierName?: string | null;
+  status: PurchaseOrderStatus;
+  notes?: string | null;
+  totalCost: number;
+  items: PurchaseOrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePurchaseOrderBody {
+  supplierId?: number | null;
+  notes?: string | null;
+  items: CreatePurchaseOrderItemBody[];
+}
+
+export type UpdatePurchaseOrderBodyStatus =
+  (typeof UpdatePurchaseOrderBodyStatus)[keyof typeof UpdatePurchaseOrderBodyStatus];
+
+export const UpdatePurchaseOrderBodyStatus = {
+  draft: "draft",
+  ordered: "ordered",
+  received: "received",
+  cancelled: "cancelled",
+} as const;
+
+export interface UpdatePurchaseOrderBody {
+  status?: UpdatePurchaseOrderBodyStatus;
+  notes?: string | null;
+}
+
+export interface CatalogProduct {
+  id: number;
+  name: string;
+  categoryId?: number | null;
+  categoryName?: string | null;
+  unitSalePrice?: number | null;
+  quantity: number;
+  available: boolean;
+}
+
 export type ListProductsParams = {
   search?: string;
   categoryId?: number;
@@ -176,4 +304,25 @@ export type GetTopProductsParams = {
 
 export type GetRecentActivityParams = {
   limit?: number;
+};
+
+export type ListPurchaseOrdersParams = {
+  supplierId?: number;
+  status?: ListPurchaseOrdersStatus;
+};
+
+export type ListPurchaseOrdersStatus =
+  (typeof ListPurchaseOrdersStatus)[keyof typeof ListPurchaseOrdersStatus];
+
+export const ListPurchaseOrdersStatus = {
+  draft: "draft",
+  ordered: "ordered",
+  received: "received",
+  cancelled: "cancelled",
+} as const;
+
+export type GetCatalogParams = {
+  categoryId?: number;
+  search?: string;
+  inStockOnly?: boolean;
 };

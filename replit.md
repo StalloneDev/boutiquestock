@@ -28,6 +28,11 @@ A full-stack web app for fashion boutique inventory and sales management.
 - Stock entries (restock / new collections)
 - Movement history (full traceability)
 - Category management
+- **POS** — multi-item checkout with product grid, cart, realtime total, category filters
+- **Margins** — profitability stats by category: cost vs. sale value charts, margin%, revenue from sales
+- **Suppliers** — CRUD for suppliers (name, contact, phone, email, address)
+- **Purchase Orders** — create/edit/delete orders, per-supplier/status filters, "mark as received" auto-updates stock
+- **Public Catalog** — shareable URL with no layout, grouped by category, print button
 
 ### Currency
 Prices are stored as raw numbers and displayed in FCFA (West African CFA franc).

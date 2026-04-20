@@ -11,25 +11,39 @@ import { Sales } from "@/pages/sales";
 import { Categories } from "@/pages/categories";
 import { StockEntries } from "@/pages/stock-entries";
 import { History } from "@/pages/history";
+import { Pos } from "@/pages/pos";
+import { Margins } from "@/pages/margins";
+import { Suppliers } from "@/pages/suppliers";
+import { PurchaseOrders } from "@/pages/purchase-orders";
+import { Catalog } from "@/pages/catalog";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/products" component={Products} />
-        <Route path="/products/new" component={ProductNew} />
-        <Route path="/products/:id" component={ProductDetail} />
-        <Route path="/sales" component={Sales} />
-        <Route path="/categories" component={Categories} />
-        <Route path="/stock-entries" component={StockEntries} />
-        <Route path="/history" component={History} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      <Route path="/catalog" component={Catalog} />
+      <Route>
+        <Layout>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/pos" component={Pos} />
+            <Route path="/products" component={Products} />
+            <Route path="/products/new" component={ProductNew} />
+            <Route path="/products/:id" component={ProductDetail} />
+            <Route path="/sales" component={Sales} />
+            <Route path="/categories" component={Categories} />
+            <Route path="/stock-entries" component={StockEntries} />
+            <Route path="/history" component={History} />
+            <Route path="/margins" component={Margins} />
+            <Route path="/suppliers" component={Suppliers} />
+            <Route path="/purchase-orders" component={PurchaseOrders} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 

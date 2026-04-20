@@ -19,6 +19,14 @@ tags:
     description: Stock entries and movements
   - name: dashboard
     description: Dashboard summaries
+  - name: pos
+    description: Point of sale (caisse)
+  - name: suppliers
+    description: Supplier management
+  - name: purchase-orders
+    description: Purchase orders
+  - name: catalog
+    description: Public product catalog
 
 paths:
   /healthz:
@@ -404,6 +412,271 @@ paths:
                 items:
                   $ref: "#/components/schemas/ActivityItem"
 
+  /dashboard/margins:
+    get:
+      operationId: getDashboardMargins
+      tags: [dashboard]
+      summary: Margin and profitability stats by category
+      responses:
+        "200":
+          description: Margin stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarginStat"
+
+  /pos/checkout:
+    post:
+      operationId: posCheckout
+      tags: [pos]
+      summary: Process a multi-item sale (POS checkout)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PosCheckoutBody"
+      responses:
+        "201":
+          description: Checkout result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PosCheckoutResult"
+
+  /suppliers:
+    get:
+      operationId: listSuppliers
+      tags: [suppliers]
+      summary: List all suppliers
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supplier"
+    post:
+      operationId: createSupplier
+      tags: [suppliers]
+      summary: Create a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupplierBody"
+      responses:
+        "201":
+          description: Created supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+
+  /suppliers/{id}:
+    get:
+      operationId: getSupplier
+      tags: [suppliers]
+      summary: Get a supplier by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+    patch:
+      operationId: updateSupplier
+      tags: [suppliers]
+      summary: Update a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupplierBody"
+      responses:
+        "200":
+          description: Updated supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+    delete:
+      operationId: deleteSupplier
+      tags: [suppliers]
+      summary: Delete a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /purchase-orders:
+    get:
+      operationId: listPurchaseOrders
+      tags: [purchase-orders]
+      summary: List all purchase orders
+      parameters:
+        - name: supplierId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, ordered, received, cancelled]
+      responses:
+        "200":
+          description: List of purchase orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PurchaseOrder"
+    post:
+      operationId: createPurchaseOrder
+      tags: [purchase-orders]
+      summary: Create a purchase order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePurchaseOrderBody"
+      responses:
+        "201":
+          description: Created purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+
+  /purchase-orders/{id}:
+    get:
+      operationId: getPurchaseOrder
+      tags: [purchase-orders]
+      summary: Get a purchase order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+    patch:
+      operationId: updatePurchaseOrder
+      tags: [purchase-orders]
+      summary: Update a purchase order (status, notes)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePurchaseOrderBody"
+      responses:
+        "200":
+          description: Updated purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+    delete:
+      operationId: deletePurchaseOrder
+      tags: [purchase-orders]
+      summary: Delete a purchase order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /purchase-orders/{id}/receive:
+    post:
+      operationId: receivePurchaseOrder
+      tags: [purchase-orders]
+      summary: Mark purchase order as received (updates stock)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Received purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+
+  /catalog:
+    get:
+      operationId: getCatalog
+      tags: [catalog]
+      summary: Get public product catalog
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: inStockOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Catalog products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatalogProduct"
+
 components:
   schemas:
     HealthStatus:
@@ -732,3 +1005,288 @@ components:
         - delta
         - description
         - createdAt
+
+    MarginStat:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+          nullable: true
+        categoryName:
+          type: string
+        productCount:
+          type: integer
+        totalCostValue:
+          type: number
+        totalSaleValue:
+          type: number
+        totalProfit:
+          type: number
+        marginPercent:
+          type: number
+        totalUnitsSold:
+          type: integer
+        totalRevenue:
+          type: number
+      required:
+        - categoryName
+        - productCount
+        - totalCostValue
+        - totalSaleValue
+        - totalProfit
+        - marginPercent
+        - totalUnitsSold
+        - totalRevenue
+
+    PosCheckoutItem:
+      type: object
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+      required:
+        - productId
+        - quantity
+        - unitPrice
+
+    PosCheckoutBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PosCheckoutItem"
+        notes:
+          type: string
+          nullable: true
+      required:
+        - items
+
+    PosCheckoutResultItem:
+      type: object
+      properties:
+        saleId:
+          type: integer
+        productId:
+          type: integer
+        productName:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        totalAmount:
+          type: number
+      required:
+        - saleId
+        - productId
+        - productName
+        - quantity
+        - unitPrice
+        - totalAmount
+
+    PosCheckoutResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PosCheckoutResultItem"
+        grandTotal:
+          type: number
+        itemCount:
+          type: integer
+      required:
+        - items
+        - grandTotal
+        - itemCount
+
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        contact:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - createdAt
+
+    CreateSupplierBody:
+      type: object
+      properties:
+        name:
+          type: string
+        contact:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - name
+
+    PurchaseOrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        purchaseOrderId:
+          type: integer
+        productId:
+          type: integer
+        productName:
+          type: string
+        quantityOrdered:
+          type: integer
+        quantityReceived:
+          type: integer
+        unitCost:
+          type: number
+        totalCost:
+          type: number
+      required:
+        - id
+        - purchaseOrderId
+        - productId
+        - productName
+        - quantityOrdered
+        - quantityReceived
+        - unitCost
+        - totalCost
+
+    CreatePurchaseOrderItemBody:
+      type: object
+      properties:
+        productId:
+          type: integer
+        quantityOrdered:
+          type: integer
+        unitCost:
+          type: number
+      required:
+        - productId
+        - quantityOrdered
+        - unitCost
+
+    PurchaseOrder:
+      type: object
+      properties:
+        id:
+          type: integer
+        supplierId:
+          type: integer
+          nullable: true
+        supplierName:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [draft, ordered, received, cancelled]
+        notes:
+          type: string
+          nullable: true
+        totalCost:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderItem"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - status
+        - totalCost
+        - items
+        - createdAt
+        - updatedAt
+
+    CreatePurchaseOrderBody:
+      type: object
+      properties:
+        supplierId:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreatePurchaseOrderItemBody"
+      required:
+        - items
+
+    UpdatePurchaseOrderBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [draft, ordered, received, cancelled]
+        notes:
+          type: string
+          nullable: true
+
+    CatalogProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        categoryId:
+          type: integer
+          nullable: true
+        categoryName:
+          type: string
+          nullable: true
+        unitSalePrice:
+          type: number
+          nullable: true
+        quantity:
+          type: integer
+        available:
+          type: boolean
+      required:
+        - id
+        - name
+        - quantity
+        - available
+
+

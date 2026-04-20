@@ -328,3 +328,285 @@ export const GetRecentActivityResponseItem = zod.object({
 export const GetRecentActivityResponse = zod.array(
   GetRecentActivityResponseItem,
 );
+
+/**
+ * @summary Margin and profitability stats by category
+ */
+export const GetDashboardMarginsResponseItem = zod.object({
+  categoryId: zod.number().nullish(),
+  categoryName: zod.string(),
+  productCount: zod.number(),
+  totalCostValue: zod.number(),
+  totalSaleValue: zod.number(),
+  totalProfit: zod.number(),
+  marginPercent: zod.number(),
+  totalUnitsSold: zod.number(),
+  totalRevenue: zod.number(),
+});
+export const GetDashboardMarginsResponse = zod.array(
+  GetDashboardMarginsResponseItem,
+);
+
+/**
+ * @summary Process a multi-item sale (POS checkout)
+ */
+export const PosCheckoutBody = zod.object({
+  items: zod.array(
+    zod.object({
+      productId: zod.number(),
+      quantity: zod.number(),
+      unitPrice: zod.number(),
+    }),
+  ),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary List all suppliers
+ */
+export const ListSuppliersResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  contact: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListSuppliersResponse = zod.array(ListSuppliersResponseItem);
+
+/**
+ * @summary Create a supplier
+ */
+export const CreateSupplierBody = zod.object({
+  name: zod.string(),
+  contact: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Get a supplier by ID
+ */
+export const GetSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetSupplierResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  contact: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a supplier
+ */
+export const UpdateSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateSupplierBody = zod.object({
+  name: zod.string(),
+  contact: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateSupplierResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  contact: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a supplier
+ */
+export const DeleteSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all purchase orders
+ */
+export const ListPurchaseOrdersQueryParams = zod.object({
+  supplierId: zod.coerce.number().optional(),
+  status: zod.enum(["draft", "ordered", "received", "cancelled"]).optional(),
+});
+
+export const ListPurchaseOrdersResponseItem = zod.object({
+  id: zod.number(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  status: zod.enum(["draft", "ordered", "received", "cancelled"]),
+  notes: zod.string().nullish(),
+  totalCost: zod.number(),
+  items: zod.array(
+    zod.object({
+      id: zod.number(),
+      purchaseOrderId: zod.number(),
+      productId: zod.number(),
+      productName: zod.string(),
+      quantityOrdered: zod.number(),
+      quantityReceived: zod.number(),
+      unitCost: zod.number(),
+      totalCost: zod.number(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListPurchaseOrdersResponse = zod.array(
+  ListPurchaseOrdersResponseItem,
+);
+
+/**
+ * @summary Create a purchase order
+ */
+export const CreatePurchaseOrderBody = zod.object({
+  supplierId: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  items: zod.array(
+    zod.object({
+      productId: zod.number(),
+      quantityOrdered: zod.number(),
+      unitCost: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get a purchase order by ID
+ */
+export const GetPurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetPurchaseOrderResponse = zod.object({
+  id: zod.number(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  status: zod.enum(["draft", "ordered", "received", "cancelled"]),
+  notes: zod.string().nullish(),
+  totalCost: zod.number(),
+  items: zod.array(
+    zod.object({
+      id: zod.number(),
+      purchaseOrderId: zod.number(),
+      productId: zod.number(),
+      productName: zod.string(),
+      quantityOrdered: zod.number(),
+      quantityReceived: zod.number(),
+      unitCost: zod.number(),
+      totalCost: zod.number(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a purchase order (status, notes)
+ */
+export const UpdatePurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePurchaseOrderBody = zod.object({
+  status: zod.enum(["draft", "ordered", "received", "cancelled"]).optional(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdatePurchaseOrderResponse = zod.object({
+  id: zod.number(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  status: zod.enum(["draft", "ordered", "received", "cancelled"]),
+  notes: zod.string().nullish(),
+  totalCost: zod.number(),
+  items: zod.array(
+    zod.object({
+      id: zod.number(),
+      purchaseOrderId: zod.number(),
+      productId: zod.number(),
+      productName: zod.string(),
+      quantityOrdered: zod.number(),
+      quantityReceived: zod.number(),
+      unitCost: zod.number(),
+      totalCost: zod.number(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a purchase order
+ */
+export const DeletePurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Mark purchase order as received (updates stock)
+ */
+export const ReceivePurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ReceivePurchaseOrderResponse = zod.object({
+  id: zod.number(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  status: zod.enum(["draft", "ordered", "received", "cancelled"]),
+  notes: zod.string().nullish(),
+  totalCost: zod.number(),
+  items: zod.array(
+    zod.object({
+      id: zod.number(),
+      purchaseOrderId: zod.number(),
+      productId: zod.number(),
+      productName: zod.string(),
+      quantityOrdered: zod.number(),
+      quantityReceived: zod.number(),
+      unitCost: zod.number(),
+      totalCost: zod.number(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get public product catalog
+ */
+export const GetCatalogQueryParams = zod.object({
+  categoryId: zod.coerce.number().optional(),
+  search: zod.coerce.string().optional(),
+  inStockOnly: zod.coerce.boolean().optional(),
+});
+
+export const GetCatalogResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  categoryId: zod.number().nullish(),
+  categoryName: zod.string().nullish(),
+  unitSalePrice: zod.number().nullish(),
+  quantity: zod.number(),
+  available: zod.boolean(),
+});
+export const GetCatalogResponse = zod.array(GetCatalogResponseItem);
