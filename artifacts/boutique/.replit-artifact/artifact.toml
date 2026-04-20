@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Boutique Stock Manager"
+version = "1.0.0"
+id = "artifacts/boutique"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26041
+
+[services.development]
+run = "pnpm --filter @workspace/boutique run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/boutique", "run", "build" ]
+publicDir = "artifacts/boutique/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26041"
+BASE_PATH = "/"

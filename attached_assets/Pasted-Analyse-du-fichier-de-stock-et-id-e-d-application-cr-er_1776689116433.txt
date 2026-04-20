@@ -1,0 +1,74 @@
+Analyse du fichier de stock et idée d'application à créer
+Analyse du fichier FICHIER DE STOCK.xls - Note de cadrage et mini audit métier
+Résumé exécutif
+Ce document présente l'analyse du fichier Excel contenant l'inventaire actuel d'une boutique de vêtements et d'accessoires. L'objectif est de proposer une transition numérique en transformant ce simple tableau en une véritable application de gestion de stock et de ventes. L'analyse révèle un inventaire diversifié avec une valeur globale significative, mais met également en lumière des limites dans la qualité des données actuelles qui justifient le passage à un système informatisé plus robuste.
+
+Ce que contient le fichier
+L'audit du fichier fourni a permis d'extraire les métriques clés suivantes :
+
+Articles exploitables
+204
+Catégories détectées
+~ 18
+Quantité totale
+475
+Valeur totale estimée
+15 687 000
+Structure : 1 seule feuille exploitée (Feuil1).
+Colonnes utiles identifiées : N°, Désignation, Quantité, Prix unitaire, Montant total.
+Principales catégories détectées
+Le fichier révèle plusieurs familles de produits. Voici les principales catégories classées par valeur globale :
+
+Catégorie	Nombre d'articles	Unités en stock	Valeur totale estimée
+COSTUMES	21	44	3 965 000
+CRAVATES	5	39	3 050 000
+ROBES	39	58	2 245 000
+POLO	13	86	2 068 000
+CHEMISES COULEURS VARIÉES	11	39	871 000
+Anomalies et limites des données
+Bien que le fichier contenant des informations précieuses, plusieurs problèmes de qualité des données ont été identifiés, nécessitant une restructuration avant toute automatisation :
+
+Environ 29,9 % des articles n'ont pas de prix unitaire renseigné.
+Environ 31,4 % des lignes ont un montant total évalué à 0.
+Une part importante des articles de la catégorie "chaussures" ne possède pas de prix.
+Présence de doublons ou de noms d'articles très proches (ex : Polo Ewn, Alberto Roma, Hugo, Verri, Legolas ) rendant le suivi complexe.
+Orthographe et catégorisation parfois incohérentes ou manquantes.
+Conclusion technique : Les chiffres actuels sont utiles pour donner une vision globale, mais nécessairement impérativement un nettoyage et une normalisation avant d'être importés dans un système d'information.
+
+L'application à créer
+Au vu de la structure et du volume de ce stock (plus de 200 références et près de 500 unités), la recommandation principale est de développer une application web de gestion de stock et de ventes (Web POS / ERP allégé) spécialisée pour une boutique de mode.
+
+Cette application permettra de résoudre les problèmes de données manquantes (prix à 0), de centraliser la connaissance produit, de prévenir les ruptures et d'offrir une vision claire de la rentabilité de la boutique.
+
+Modules clés de l'application
+Tableau de bord : Vision synthétique (valeur du stock, nombre d'articles, top ventes).
+Catalogue produits et catégories : Fiches produits standardisées (nom, catégorie, taille/couleur si applicable, prix de revient, prix de vente).
+Entrées de stock : Enregistrement des réassortiments et des nouvelles collections.
+Sorties / Ventes : Enregistrement simple d'une vente déduisant automatiquement la quantité en stock.
+Alertes de stock faible : Notifications pour les articles nécessitant un réassortiment.
+Gestion des prix : Fiabilisation des prix de vente pour éviter les erreurs lors du passage en caisse.
+Recherche / Filtre : Retrouver rapidement un article par nom ou par catégorie.
+Historique des mouvements : Traçabilité complète de ce qui entre et sort de la boutique.
+Reporting : Rapports simples sur le chiffre d'affaires et la valorisation du stock.
+Gestion multi-utilisateur : Accès différenciés (gérant vs vendeurs).
+Version MVP (Produit minimum viable)
+Pour un lancement rapide et efficace, la première version devrait se concentrer uniquement sur :
+
+L'importation des données nettoyées du fichier Excel actuel.
+La consultation du catalogue via une recherche simplifiée.
+La modification manuelle des quantités (+1 / -1) pour tracer les entrées et les sorties.
+La mise à jour sécurisée des prix manquants.
+Évolutions possibles (V2)
+Une fois la gestion de base maîtrisée, le système pourra évoluer vers des fonctionnalités plus avancées :
+
+Caisse / POS : Module de facturation et d'encaissement complet avec impression de tickets.
+Code-barres : Génération et scan d'étiquettes pour accélérer les inventaires et les ventes.
+WhatsApp Catalog : Génération automatique d'un catalogue partageable avec les clients.
+Gestion fournisseurs : Suivi des commandes d'achat.
+Statistiques de marge : Calcul précis de la rentabilité par catégorie de vêtements.
+Version mobile : Application optimisée pour smartphone pour le vendeur en rayon.
+Recommandation d'entreprise
+Il est fortement conseillé de démarrer avec une application simple pour numériser le stock existant. Cette première étape permettra de fiabiliser les prix de vente (actuellement absents sur 30% des articles), de suivre les ventes réelles et, in fine, d'identifier avec précision les familles de produits les plus louables (comme les costumes et les cravates qui représentent une forte valeur). L'investissement dans cet outil se justifie par la sécurisation d'un stock d'une valeur estimée à plus de 15 millions.
+
+Conclusion
+Ce fichier Excel n'est pas juste un tableau récapitulatif ; il constitue la base fondatrice d'un futur système d'information complet pour la boutique. En structurant ces données au sein d'une application dédiée, l'entreprise passera d'une gestion artisanale sujette aux erreurs à un pilotage professionnel, sécurisé et orienté vers la croissance.

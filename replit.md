@@ -15,6 +15,32 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **Frontend**: React + Vite, TailwindCSS, React Query, Wouter
+
+## Application: BoutiqueStock
+
+A full-stack web app for fashion boutique inventory and sales management.
+
+### Features
+- Dashboard with stock value, low-stock alerts, category breakdown chart, recent activity
+- Product catalog with search, filters, quick +/- stock buttons
+- Sales recording (auto-deducts stock)
+- Stock entries (restock / new collections)
+- Movement history (full traceability)
+- Category management
+
+### Currency
+Prices are stored as raw numbers and displayed in FCFA (West African CFA franc).
+
+### Artifacts
+- `artifacts/boutique` — React+Vite frontend (previewPath: `/`)
+- `artifacts/api-server` — Express 5 API server (previewPath: `/api`)
+
+### DB Schema
+- `categories` — Product categories
+- `products` — Product catalog (with cost/sale price, quantity, low stock threshold)
+- `sales` — Sales records (auto-deducts from product quantity)
+- `stock_movements` — Full traceability of all stock changes (entry, exit, adjustment, sale)
 
 ## Key Commands
 
