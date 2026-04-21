@@ -4,7 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { formatDistanceToNow } from "date-fns";
-import { ShoppingBag, ArrowDownUp, RefreshCcw, Package, AlertCircle } from "lucide-react";
+import { fr } from "date-fns/locale";
+import { ShoppingBag, ArrowDownUp, RefreshCcw, AlertCircle, Wallet, TrendingUp, Boxes, Trophy } from "lucide-react";
 import { Link } from "wouter";
 
 export function Dashboard() {
@@ -27,40 +28,68 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+      <div className="flex items-end justify-between border-b border-border/60 pb-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
+          <p className="text-sm text-muted-foreground mt-1">Vue d'ensemble de votre boutique</p>
+        </div>
         <div className="text-sm text-muted-foreground">
-          {summary ? `${summary.totalProducts} active products in stock` : <Skeleton className="h-4 w-32" />}
+          {summary ? `${summary.totalProducts} produits actifs` : <Skeleton className="h-4 w-32" />}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-muted-foreground">Total Inventory Value</h3>
-            <div className="text-2xl font-bold mt-2">{sumLoading ? <Skeleton className="h-8 w-full" /> : formatCurrency(summary?.totalStockValue || 0)}</div>
+        <Card className="hover:shadow-sm transition-shadow">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Valeur du stock</h3>
+                <div className="text-2xl font-bold mt-2">{sumLoading ? <Skeleton className="h-8 w-full" /> : formatCurrency(summary?.totalStockValue || 0)}</div>
+              </div>
+              <div className="h-9 w-9 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                <Wallet size={18} />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-muted-foreground">Total Sales Value</h3>
-            <div className="text-2xl font-bold mt-2 text-green-600">{sumLoading ? <Skeleton className="h-8 w-full" /> : formatCurrency(summary?.totalSalesValue || 0)}</div>
+        <Card className="hover:shadow-sm transition-shadow">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total des ventes</h3>
+                <div className="text-2xl font-bold mt-2 text-green-600">{sumLoading ? <Skeleton className="h-8 w-full" /> : formatCurrency(summary?.totalSalesValue || 0)}</div>
+              </div>
+              <div className="h-9 w-9 rounded-lg bg-green-500/10 text-green-600 flex items-center justify-center">
+                <TrendingUp size={18} />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-muted-foreground">Total Units</h3>
-            <div className="text-2xl font-bold mt-2">{sumLoading ? <Skeleton className="h-8 w-full" /> : summary?.totalUnits || 0}</div>
+        <Card className="hover:shadow-sm transition-shadow">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Unités en stock</h3>
+                <div className="text-2xl font-bold mt-2">{sumLoading ? <Skeleton className="h-8 w-full" /> : summary?.totalUnits || 0}</div>
+              </div>
+              <div className="h-9 w-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                <Boxes size={18} />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className={summary?.lowStockCount ? "border-orange-500/50 bg-orange-500/5" : ""}>
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              Low Stock Alerts
-              {summary?.lowStockCount ? <AlertCircle className="h-4 w-4 text-orange-500" /> : null}
-            </h3>
-            <div className={`text-2xl font-bold mt-2 ${summary?.lowStockCount ? 'text-orange-600' : ''}`}>
-              {sumLoading ? <Skeleton className="h-8 w-full" /> : summary?.lowStockCount || 0}
+        <Card className={summary?.lowStockCount ? "border-orange-500/50 bg-orange-500/5 hover:shadow-sm transition-shadow" : "hover:shadow-sm transition-shadow"}>
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Alertes stock bas</h3>
+                <div className={`text-2xl font-bold mt-2 ${summary?.lowStockCount ? 'text-orange-600' : ''}`}>
+                  {sumLoading ? <Skeleton className="h-8 w-full" /> : summary?.lowStockCount || 0}
+                </div>
+              </div>
+              <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${summary?.lowStockCount ? 'bg-orange-500/10 text-orange-600' : 'bg-muted text-muted-foreground'}`}>
+                <AlertCircle size={18} />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -69,19 +98,19 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Category Value Breakdown</CardTitle>
+            <CardTitle className="text-base">Valeur par catégorie</CardTitle>
           </CardHeader>
           <CardContent>
             {catLoading ? (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading chart...</div>
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">Chargement du graphique...</div>
             ) : chartData.length > 0 ? (
               <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                     <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `${value / 1000}k`} tick={{ fontSize: 12 }} />
-                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} formatter={(value: number) => [formatCurrency(value), "Value"]} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} formatter={(value: number) => [formatCurrency(value), "Valeur"]} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
                       ))}
@@ -90,21 +119,21 @@ export function Dashboard() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">No category data available</div>
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">Aucune donnée disponible</div>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Recent Activity</CardTitle>
+            <CardTitle className="text-base">Activité récente</CardTitle>
           </CardHeader>
           <CardContent className="px-0">
             <div className="space-y-0 divide-y divide-border/50 max-h-[300px] overflow-y-auto">
               {actLoading ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">Loading activity...</div>
+                <div className="p-4 text-center text-sm text-muted-foreground">Chargement...</div>
               ) : activity?.length === 0 ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">No recent activity.</div>
+                <div className="p-4 text-center text-sm text-muted-foreground">Aucune activité récente.</div>
               ) : (
                 activity?.map((item) => (
                   <div key={item.id} className="p-4 flex items-start gap-3 hover:bg-muted/30 transition-colors">
@@ -119,7 +148,7 @@ export function Dashboard() {
                         </Link>
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true, locale: fr })}
                         </span>
                       </div>
                     </div>
@@ -136,29 +165,39 @@ export function Dashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Top Selling Products</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trophy size={16} className="text-amber-500" />
+            Meilleures ventes
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {topLoading ? (
-              <div className="text-center text-sm text-muted-foreground py-4">Loading top products...</div>
+              <div className="text-center text-sm text-muted-foreground py-4">Chargement...</div>
             ) : topProducts?.length === 0 ? (
-              <div className="text-center text-sm text-muted-foreground py-4">No sales data yet.</div>
+              <div className="text-center text-sm text-muted-foreground py-4">Aucune vente enregistrée.</div>
             ) : (
               topProducts?.map((product, i) => (
-                <div key={product.productId} className="flex items-center justify-between">
+                <div key={product.productId} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-6 text-center font-mono text-sm text-muted-foreground">#{i + 1}</div>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                      i === 0 ? 'bg-amber-100 text-amber-700' :
+                      i === 1 ? 'bg-slate-100 text-slate-600' :
+                      i === 2 ? 'bg-orange-100 text-orange-700' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {i + 1}
+                    </div>
                     <div>
                       <Link href={`/products/${product.productId}`} className="font-medium hover:underline">
                         {product.productName}
                       </Link>
-                      <p className="text-xs text-muted-foreground">{product.categoryName || "Uncategorized"}</p>
+                      <p className="text-xs text-muted-foreground">{product.categoryName || "Sans catégorie"}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold">{formatCurrency(product.totalRevenue)}</div>
-                    <div className="text-xs text-muted-foreground">{product.totalSold} units sold</div>
+                    <div className="text-xs text-muted-foreground">{product.totalSold} unités vendues</div>
                   </div>
                 </div>
               ))
