@@ -28,6 +28,7 @@ router.get("/", async (req, res): Promise<void> => {
       categoryName: categoriesTable.name,
       unitSalePrice: productsTable.unitSalePrice,
       quantity: productsTable.quantity,
+      imageUrl: productsTable.imageUrl,
     })
     .from(productsTable)
     .leftJoin(categoriesTable, eq(productsTable.categoryId, categoriesTable.id))
@@ -42,6 +43,7 @@ router.get("/", async (req, res): Promise<void> => {
     unitSalePrice: p.unitSalePrice ? parseFloat(p.unitSalePrice) : null,
     quantity: p.quantity,
     available: p.quantity > 0,
+    imageUrl: p.imageUrl,
   }));
 
   res.json(result);

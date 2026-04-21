@@ -19,16 +19,19 @@ import type {
 import type {
   ActivityItem,
   AdjustStockBody,
+  BarcodeLookupResult,
   CatalogProduct,
   Category,
   CategoryBreakdown,
   CreateCategoryBody,
   CreateProductBody,
+  CreateProductVariantBody,
   CreatePurchaseOrderBody,
   CreateSaleBody,
   CreateStockMovementBody,
   CreateSupplierBody,
   DashboardSummary,
+  ErrorEnvelope,
   GetCatalogParams,
   GetRecentActivityParams,
   GetTopProductsParams,
@@ -41,13 +44,17 @@ import type {
   PosCheckoutBody,
   PosCheckoutResult,
   Product,
+  ProductVariant,
   PurchaseOrder,
   Sale,
   StockMovement,
   Supplier,
   TopProduct,
   UpdateProductBody,
+  UpdateProductVariantBody,
   UpdatePurchaseOrderBody,
+  UploadUrlRequest,
+  UploadUrlResponse,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -990,6 +997,704 @@ export const useAdjustProductStock = <
 > => {
   return useMutation(getAdjustProductStockMutationOptions(options));
 };
+
+/**
+ * @summary Find a product or variant by barcode
+ */
+export const getLookupByBarcodeUrl = (barcode: string) => {
+  return `/api/products/by-barcode/${barcode}`;
+};
+
+export const lookupByBarcode = async (
+  barcode: string,
+  options?: RequestInit,
+): Promise<BarcodeLookupResult> => {
+  return customFetch<BarcodeLookupResult>(getLookupByBarcodeUrl(barcode), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getLookupByBarcodeQueryKey = (barcode: string) => {
+  return [`/api/products/by-barcode/${barcode}`] as const;
+};
+
+export const getLookupByBarcodeQueryOptions = <
+  TData = Awaited<ReturnType<typeof lookupByBarcode>>,
+  TError = ErrorType<void>,
+>(
+  barcode: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof lookupByBarcode>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getLookupByBarcodeQueryKey(barcode);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof lookupByBarcode>>> = ({
+    signal,
+  }) => lookupByBarcode(barcode, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!barcode,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof lookupByBarcode>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type LookupByBarcodeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof lookupByBarcode>>
+>;
+export type LookupByBarcodeQueryError = ErrorType<void>;
+
+/**
+ * @summary Find a product or variant by barcode
+ */
+
+export function useLookupByBarcode<
+  TData = Awaited<ReturnType<typeof lookupByBarcode>>,
+  TError = ErrorType<void>,
+>(
+  barcode: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof lookupByBarcode>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getLookupByBarcodeQueryOptions(barcode, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List variants of a product
+ */
+export const getListProductVariantsUrl = (id: number) => {
+  return `/api/products/${id}/variants`;
+};
+
+export const listProductVariants = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ProductVariant[]> => {
+  return customFetch<ProductVariant[]>(getListProductVariantsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListProductVariantsQueryKey = (id: number) => {
+  return [`/api/products/${id}/variants`] as const;
+};
+
+export const getListProductVariantsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProductVariants>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProductVariants>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProductVariantsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listProductVariants>>
+  > = ({ signal }) => listProductVariants(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProductVariants>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProductVariantsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProductVariants>>
+>;
+export type ListProductVariantsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List variants of a product
+ */
+
+export function useListProductVariants<
+  TData = Awaited<ReturnType<typeof listProductVariants>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProductVariants>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProductVariantsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a variant for a product
+ */
+export const getCreateProductVariantUrl = (id: number) => {
+  return `/api/products/${id}/variants`;
+};
+
+export const createProductVariant = async (
+  id: number,
+  createProductVariantBody: CreateProductVariantBody,
+  options?: RequestInit,
+): Promise<ProductVariant> => {
+  return customFetch<ProductVariant>(getCreateProductVariantUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createProductVariantBody),
+  });
+};
+
+export const getCreateProductVariantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProductVariant>>,
+    TError,
+    { id: number; data: BodyType<CreateProductVariantBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProductVariant>>,
+  TError,
+  { id: number; data: BodyType<CreateProductVariantBody> },
+  TContext
+> => {
+  const mutationKey = ["createProductVariant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProductVariant>>,
+    { id: number; data: BodyType<CreateProductVariantBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createProductVariant(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProductVariantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProductVariant>>
+>;
+export type CreateProductVariantMutationBody =
+  BodyType<CreateProductVariantBody>;
+export type CreateProductVariantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a variant for a product
+ */
+export const useCreateProductVariant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProductVariant>>,
+    TError,
+    { id: number; data: BodyType<CreateProductVariantBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createProductVariant>>,
+  TError,
+  { id: number; data: BodyType<CreateProductVariantBody> },
+  TContext
+> => {
+  return useMutation(getCreateProductVariantMutationOptions(options));
+};
+
+/**
+ * @summary Update a variant
+ */
+export const getUpdateProductVariantUrl = (id: number) => {
+  return `/api/variants/${id}`;
+};
+
+export const updateProductVariant = async (
+  id: number,
+  updateProductVariantBody: UpdateProductVariantBody,
+  options?: RequestInit,
+): Promise<ProductVariant> => {
+  return customFetch<ProductVariant>(getUpdateProductVariantUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateProductVariantBody),
+  });
+};
+
+export const getUpdateProductVariantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProductVariant>>,
+    TError,
+    { id: number; data: BodyType<UpdateProductVariantBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProductVariant>>,
+  TError,
+  { id: number; data: BodyType<UpdateProductVariantBody> },
+  TContext
+> => {
+  const mutationKey = ["updateProductVariant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProductVariant>>,
+    { id: number; data: BodyType<UpdateProductVariantBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateProductVariant(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProductVariantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProductVariant>>
+>;
+export type UpdateProductVariantMutationBody =
+  BodyType<UpdateProductVariantBody>;
+export type UpdateProductVariantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a variant
+ */
+export const useUpdateProductVariant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProductVariant>>,
+    TError,
+    { id: number; data: BodyType<UpdateProductVariantBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateProductVariant>>,
+  TError,
+  { id: number; data: BodyType<UpdateProductVariantBody> },
+  TContext
+> => {
+  return useMutation(getUpdateProductVariantMutationOptions(options));
+};
+
+/**
+ * @summary Delete a variant
+ */
+export const getDeleteProductVariantUrl = (id: number) => {
+  return `/api/variants/${id}`;
+};
+
+export const deleteProductVariant = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProductVariantUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteProductVariantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProductVariant>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProductVariant>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteProductVariant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProductVariant>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteProductVariant(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProductVariantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProductVariant>>
+>;
+
+export type DeleteProductVariantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a variant
+ */
+export const useDeleteProductVariant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProductVariant>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProductVariant>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteProductVariantMutationOptions(options));
+};
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+export const getRequestUploadUrlUrl = () => {
+  return `/api/storage/uploads/request-url`;
+};
+
+export const requestUploadUrl = async (
+  uploadUrlRequest: UploadUrlRequest,
+  options?: RequestInit,
+): Promise<UploadUrlResponse> => {
+  return customFetch<UploadUrlResponse>(getRequestUploadUrlUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(uploadUrlRequest),
+  });
+};
+
+export const getRequestUploadUrlMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestUploadUrl>>,
+    TError,
+    { data: BodyType<UploadUrlRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestUploadUrl>>,
+  TError,
+  { data: BodyType<UploadUrlRequest> },
+  TContext
+> => {
+  const mutationKey = ["requestUploadUrl"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestUploadUrl>>,
+    { data: BodyType<UploadUrlRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return requestUploadUrl(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestUploadUrlMutationResult = NonNullable<
+  Awaited<ReturnType<typeof requestUploadUrl>>
+>;
+export type RequestUploadUrlMutationBody = BodyType<UploadUrlRequest>;
+export type RequestUploadUrlMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+export const useRequestUploadUrl = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestUploadUrl>>,
+    TError,
+    { data: BodyType<UploadUrlRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof requestUploadUrl>>,
+  TError,
+  { data: BodyType<UploadUrlRequest> },
+  TContext
+> => {
+  return useMutation(getRequestUploadUrlMutationOptions(options));
+};
+
+/**
+ * @summary Serve a public asset
+ */
+export const getGetPublicObjectUrl = (filePath: string) => {
+  return `/api/storage/public-objects/${filePath}`;
+};
+
+export const getPublicObject = async (
+  filePath: string,
+  options?: RequestInit,
+): Promise<Blob> => {
+  return customFetch<Blob>(getGetPublicObjectUrl(filePath), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPublicObjectQueryKey = (filePath: string) => {
+  return [`/api/storage/public-objects/${filePath}`] as const;
+};
+
+export const getGetPublicObjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicObject>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  filePath: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicObject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPublicObjectQueryKey(filePath);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicObject>>> = ({
+    signal,
+  }) => getPublicObject(filePath, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!filePath,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicObject>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPublicObjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPublicObject>>
+>;
+export type GetPublicObjectQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Serve a public asset
+ */
+
+export function useGetPublicObject<
+  TData = Awaited<ReturnType<typeof getPublicObject>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  filePath: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicObject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPublicObjectQueryOptions(filePath, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Serve a private object
+ */
+export const getGetStorageObjectUrl = (objectPath: string) => {
+  return `/api/storage/objects/${objectPath}`;
+};
+
+export const getStorageObject = async (
+  objectPath: string,
+  options?: RequestInit,
+): Promise<Blob> => {
+  return customFetch<Blob>(getGetStorageObjectUrl(objectPath), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetStorageObjectQueryKey = (objectPath: string) => {
+  return [`/api/storage/objects/${objectPath}`] as const;
+};
+
+export const getGetStorageObjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getStorageObject>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  objectPath: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getStorageObject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetStorageObjectQueryKey(objectPath);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getStorageObject>>
+  > = ({ signal }) =>
+    getStorageObject(objectPath, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!objectPath,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getStorageObject>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetStorageObjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getStorageObject>>
+>;
+export type GetStorageObjectQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Serve a private object
+ */
+
+export function useGetStorageObject<
+  TData = Awaited<ReturnType<typeof getStorageObject>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  objectPath: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getStorageObject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetStorageObjectQueryOptions(objectPath, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary List sales

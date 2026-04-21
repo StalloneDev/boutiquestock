@@ -78,6 +78,24 @@ export const ListProductsResponseItem = zod.object({
   unitSalePrice: zod.number().nullish(),
   lowStockThreshold: zod.number(),
   notes: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  hasVariants: zod.boolean(),
+  variants: zod
+    .array(
+      zod.object({
+        id: zod.number(),
+        productId: zod.number(),
+        size: zod.string().nullish(),
+        color: zod.string().nullish(),
+        sku: zod.string().nullish(),
+        barcode: zod.string().nullish(),
+        quantity: zod.number(),
+        unitCostPrice: zod.number().nullish(),
+        unitSalePrice: zod.number().nullish(),
+      }),
+    )
+    .optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -99,6 +117,8 @@ export const CreateProductBody = zod.object({
     .number()
     .default(createProductBodyLowStockThresholdDefault),
   notes: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
 });
 
 /**
@@ -118,6 +138,24 @@ export const GetProductResponse = zod.object({
   unitSalePrice: zod.number().nullish(),
   lowStockThreshold: zod.number(),
   notes: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  hasVariants: zod.boolean(),
+  variants: zod
+    .array(
+      zod.object({
+        id: zod.number(),
+        productId: zod.number(),
+        size: zod.string().nullish(),
+        color: zod.string().nullish(),
+        sku: zod.string().nullish(),
+        barcode: zod.string().nullish(),
+        quantity: zod.number(),
+        unitCostPrice: zod.number().nullish(),
+        unitSalePrice: zod.number().nullish(),
+      }),
+    )
+    .optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -137,6 +175,8 @@ export const UpdateProductBody = zod.object({
   unitSalePrice: zod.number().nullish(),
   lowStockThreshold: zod.number().optional(),
   notes: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
 });
 
 export const UpdateProductResponse = zod.object({
@@ -149,6 +189,24 @@ export const UpdateProductResponse = zod.object({
   unitSalePrice: zod.number().nullish(),
   lowStockThreshold: zod.number(),
   notes: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  hasVariants: zod.boolean(),
+  variants: zod
+    .array(
+      zod.object({
+        id: zod.number(),
+        productId: zod.number(),
+        size: zod.string().nullish(),
+        color: zod.string().nullish(),
+        sku: zod.string().nullish(),
+        barcode: zod.string().nullish(),
+        quantity: zod.number(),
+        unitCostPrice: zod.number().nullish(),
+        unitSalePrice: zod.number().nullish(),
+      }),
+    )
+    .optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -182,8 +240,193 @@ export const AdjustProductStockResponse = zod.object({
   unitSalePrice: zod.number().nullish(),
   lowStockThreshold: zod.number(),
   notes: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  hasVariants: zod.boolean(),
+  variants: zod
+    .array(
+      zod.object({
+        id: zod.number(),
+        productId: zod.number(),
+        size: zod.string().nullish(),
+        color: zod.string().nullish(),
+        sku: zod.string().nullish(),
+        barcode: zod.string().nullish(),
+        quantity: zod.number(),
+        unitCostPrice: zod.number().nullish(),
+        unitSalePrice: zod.number().nullish(),
+      }),
+    )
+    .optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Find a product or variant by barcode
+ */
+export const LookupByBarcodeParams = zod.object({
+  barcode: zod.coerce.string(),
+});
+
+export const LookupByBarcodeResponse = zod.object({
+  product: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    categoryId: zod.number().nullish(),
+    categoryName: zod.string().nullish(),
+    quantity: zod.number(),
+    unitCostPrice: zod.number().nullish(),
+    unitSalePrice: zod.number().nullish(),
+    lowStockThreshold: zod.number(),
+    notes: zod.string().nullish(),
+    barcode: zod.string().nullish(),
+    imageUrl: zod.string().nullish(),
+    hasVariants: zod.boolean(),
+    variants: zod
+      .array(
+        zod.object({
+          id: zod.number(),
+          productId: zod.number(),
+          size: zod.string().nullish(),
+          color: zod.string().nullish(),
+          sku: zod.string().nullish(),
+          barcode: zod.string().nullish(),
+          quantity: zod.number(),
+          unitCostPrice: zod.number().nullish(),
+          unitSalePrice: zod.number().nullish(),
+        }),
+      )
+      .optional(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  variant: zod
+    .object({
+      id: zod.number(),
+      productId: zod.number(),
+      size: zod.string().nullish(),
+      color: zod.string().nullish(),
+      sku: zod.string().nullish(),
+      barcode: zod.string().nullish(),
+      quantity: zod.number(),
+      unitCostPrice: zod.number().nullish(),
+      unitSalePrice: zod.number().nullish(),
+    })
+    .nullish(),
+});
+
+/**
+ * @summary List variants of a product
+ */
+export const ListProductVariantsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProductVariantsResponseItem = zod.object({
+  id: zod.number(),
+  productId: zod.number(),
+  size: zod.string().nullish(),
+  color: zod.string().nullish(),
+  sku: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  quantity: zod.number(),
+  unitCostPrice: zod.number().nullish(),
+  unitSalePrice: zod.number().nullish(),
+});
+export const ListProductVariantsResponse = zod.array(
+  ListProductVariantsResponseItem,
+);
+
+/**
+ * @summary Create a variant for a product
+ */
+export const CreateProductVariantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const createProductVariantBodyQuantityDefault = 0;
+
+export const CreateProductVariantBody = zod.object({
+  size: zod.string().nullish(),
+  color: zod.string().nullish(),
+  sku: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  quantity: zod.number().default(createProductVariantBodyQuantityDefault),
+  unitCostPrice: zod.number().nullish(),
+  unitSalePrice: zod.number().nullish(),
+});
+
+/**
+ * @summary Update a variant
+ */
+export const UpdateProductVariantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateProductVariantBody = zod.object({
+  size: zod.string().nullish(),
+  color: zod.string().nullish(),
+  sku: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  quantity: zod.number().optional(),
+  unitCostPrice: zod.number().nullish(),
+  unitSalePrice: zod.number().nullish(),
+});
+
+export const UpdateProductVariantResponse = zod.object({
+  id: zod.number(),
+  productId: zod.number(),
+  size: zod.string().nullish(),
+  color: zod.string().nullish(),
+  sku: zod.string().nullish(),
+  barcode: zod.string().nullish(),
+  quantity: zod.number(),
+  unitCostPrice: zod.number().nullish(),
+  unitSalePrice: zod.number().nullish(),
+});
+
+/**
+ * @summary Delete a variant
+ */
+export const DeleteProductVariantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+
+export const RequestUploadUrlBody = zod.object({
+  name: zod.string().min(1),
+  size: zod.number().min(1),
+  contentType: zod.string().min(1),
+});
+
+export const RequestUploadUrlResponse = zod.object({
+  uploadURL: zod.string(),
+  objectPath: zod.string(),
+  metadata: zod
+    .object({
+      name: zod.string().min(1),
+      size: zod.number().min(1),
+      contentType: zod.string().min(1),
+    })
+    .optional(),
+});
+
+/**
+ * @summary Serve a public asset
+ */
+export const GetPublicObjectParams = zod.object({
+  filePath: zod.coerce.string(),
+});
+
+/**
+ * @summary Serve a private object
+ */
+export const GetStorageObjectParams = zod.object({
+  objectPath: zod.coerce.string(),
 });
 
 /**
@@ -354,6 +597,7 @@ export const PosCheckoutBody = zod.object({
   items: zod.array(
     zod.object({
       productId: zod.number(),
+      variantId: zod.number().nullish(),
       quantity: zod.number(),
       unitPrice: zod.number(),
     }),
@@ -608,5 +852,6 @@ export const GetCatalogResponseItem = zod.object({
   unitSalePrice: zod.number().nullish(),
   quantity: zod.number(),
   available: zod.boolean(),
+  imageUrl: zod.string().nullish(),
 });
 export const GetCatalogResponse = zod.array(GetCatalogResponseItem);

@@ -21,6 +21,18 @@ export interface CreateCategoryBody {
   description?: string | null;
 }
 
+export interface ProductVariant {
+  id: number;
+  productId: number;
+  size?: string | null;
+  color?: string | null;
+  sku?: string | null;
+  barcode?: string | null;
+  quantity: number;
+  unitCostPrice?: number | null;
+  unitSalePrice?: number | null;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -31,8 +43,37 @@ export interface Product {
   unitSalePrice?: number | null;
   lowStockThreshold: number;
   notes?: string | null;
+  barcode?: string | null;
+  imageUrl?: string | null;
+  hasVariants: boolean;
+  variants?: ProductVariant[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateProductVariantBody {
+  size?: string | null;
+  color?: string | null;
+  sku?: string | null;
+  barcode?: string | null;
+  quantity?: number;
+  unitCostPrice?: number | null;
+  unitSalePrice?: number | null;
+}
+
+export interface UpdateProductVariantBody {
+  size?: string | null;
+  color?: string | null;
+  sku?: string | null;
+  barcode?: string | null;
+  quantity?: number;
+  unitCostPrice?: number | null;
+  unitSalePrice?: number | null;
+}
+
+export interface BarcodeLookupResult {
+  product: Product;
+  variant?: ProductVariant | null;
 }
 
 export interface CreateProductBody {
@@ -43,6 +84,8 @@ export interface CreateProductBody {
   unitSalePrice?: number | null;
   lowStockThreshold?: number;
   notes?: string | null;
+  barcode?: string | null;
+  imageUrl?: string | null;
 }
 
 export interface UpdateProductBody {
@@ -53,6 +96,27 @@ export interface UpdateProductBody {
   unitSalePrice?: number | null;
   lowStockThreshold?: number;
   notes?: string | null;
+  barcode?: string | null;
+  imageUrl?: string | null;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 
 export interface AdjustStockBody {
@@ -167,6 +231,7 @@ export interface MarginStat {
 
 export interface PosCheckoutItem {
   productId: number;
+  variantId?: number | null;
   quantity: number;
   unitPrice: number;
 }
@@ -179,7 +244,9 @@ export interface PosCheckoutBody {
 export interface PosCheckoutResultItem {
   saleId: number;
   productId: number;
+  variantId?: number | null;
   productName: string;
+  variantLabel?: string | null;
   quantity: number;
   unitPrice: number;
   totalAmount: number;
@@ -279,6 +346,7 @@ export interface CatalogProduct {
   unitSalePrice?: number | null;
   quantity: number;
   available: boolean;
+  imageUrl?: string | null;
 }
 
 export type ListProductsParams = {

@@ -12,6 +12,9 @@ export const productsTable = pgTable("products", {
   unitSalePrice: numeric("unit_sale_price", { precision: 12, scale: 2 }),
   lowStockThreshold: integer("low_stock_threshold").notNull().default(2),
   notes: text("notes"),
+  barcode: text("barcode").unique(),
+  imageUrl: text("image_url"),
+  hasVariants: integer("has_variants").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

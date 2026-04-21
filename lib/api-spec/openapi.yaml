@@ -27,6 +27,10 @@ tags:
     description: Purchase orders
   - name: catalog
     description: Public product catalog
+  - name: variants
+    description: Product variants (size/color)
+  - name: storage
+    description: Object storage upload and serving
 
 paths:
   /healthz:
@@ -236,6 +240,192 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
+
+  /products/by-barcode/{barcode}:
+    get:
+      operationId: lookupByBarcode
+      tags: [products]
+      summary: Find a product or variant by barcode
+      parameters:
+        - name: barcode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product (and optional variant) matching the barcode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BarcodeLookupResult"
+        "404":
+          description: No product found
+
+  /products/{id}/variants:
+    get:
+      operationId: listProductVariants
+      tags: [variants]
+      summary: List variants of a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of variants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductVariant"
+    post:
+      operationId: createProductVariant
+      tags: [variants]
+      summary: Create a variant for a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductVariantBody"
+      responses:
+        "201":
+          description: Created variant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductVariant"
+
+  /variants/{id}:
+    patch:
+      operationId: updateProductVariant
+      tags: [variants]
+      summary: Update a variant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductVariantBody"
+      responses:
+        "200":
+          description: Updated variant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductVariant"
+    delete:
+      operationId: deleteProductVariant
+      tags: [variants]
+      summary: Delete a variant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [storage]
+      operationId: getPublicObject
+      summary: Serve a public asset
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/objects/{objectPath}:
+    get:
+      tags: [storage]
+      operationId: getStorageObject
+      summary: Serve a private object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
 
   /sales:
     get:
@@ -742,6 +932,18 @@ components:
         notes:
           type: string
           nullable: true
+        barcode:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        hasVariants:
+          type: boolean
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVariant"
         createdAt:
           type: string
           format: date-time
@@ -753,8 +955,101 @@ components:
         - name
         - quantity
         - lowStockThreshold
+        - hasVariants
         - createdAt
         - updatedAt
+
+    ProductVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+        productId:
+          type: integer
+        size:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        quantity:
+          type: integer
+        unitCostPrice:
+          type: number
+          nullable: true
+        unitSalePrice:
+          type: number
+          nullable: true
+      required:
+        - id
+        - productId
+        - quantity
+
+    CreateProductVariantBody:
+      type: object
+      properties:
+        size:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        quantity:
+          type: integer
+          default: 0
+        unitCostPrice:
+          type: number
+          nullable: true
+        unitSalePrice:
+          type: number
+          nullable: true
+
+    UpdateProductVariantBody:
+      type: object
+      properties:
+        size:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        quantity:
+          type: integer
+        unitCostPrice:
+          type: number
+          nullable: true
+        unitSalePrice:
+          type: number
+          nullable: true
+
+    BarcodeLookupResult:
+      type: object
+      properties:
+        product:
+          $ref: "#/components/schemas/Product"
+        variant:
+          $ref: "#/components/schemas/ProductVariant"
+          nullable: true
+      required:
+        - product
 
     CreateProductBody:
       type: object
@@ -777,6 +1072,12 @@ components:
           type: integer
           default: 2
         notes:
+          type: string
+          nullable: true
+        barcode:
+          type: string
+          nullable: true
+        imageUrl:
           type: string
           nullable: true
       required:
@@ -803,6 +1104,44 @@ components:
         notes:
           type: string
           nullable: true
+        barcode:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
 
     AdjustStockBody:
       type: object
@@ -1043,6 +1382,9 @@ components:
       properties:
         productId:
           type: integer
+        variantId:
+          type: integer
+          nullable: true
         quantity:
           type: integer
         unitPrice:
@@ -1072,8 +1414,14 @@ components:
           type: integer
         productId:
           type: integer
+        variantId:
+          type: integer
+          nullable: true
         productName:
           type: string
+        variantLabel:
+          type: string
+          nullable: true
         quantity:
           type: integer
         unitPrice:
@@ -1283,6 +1631,9 @@ components:
           type: integer
         available:
           type: boolean
+        imageUrl:
+          type: string
+          nullable: true
       required:
         - id
         - name
