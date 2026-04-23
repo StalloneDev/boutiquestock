@@ -1,11 +1,12 @@
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: string | number | null | undefined): string {
+  const value = typeof amount === "string" ? parseFloat(amount) : amount || 0;
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "XAF",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   })
-    .format(amount)
+    .format(value)
     .replace("XAF", "FCFA");
 }
 
