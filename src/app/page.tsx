@@ -17,7 +17,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Tableau de bord</h1>
-          <p className="text-slate-500 mt-1">Gérez la croissance de votre boutique en un coup d'œil.</p>
+          <p className="text-slate-500 mt-1">Gérez la croissance de votre boutique en un coup d{`'`}œil.</p>
         </div>
         <div className="flex gap-2">
           <Link href="/restock">
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Rentabilité par Catégorie</CardTitle>
-            <Link href="/margins" className="text-xs text-primary hover:underline">Voir l'analyse détaillée</Link>
+            <Link href="/margins" className="text-xs text-primary hover:underline">Voir l{`'`}analyse détaillée</Link>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
