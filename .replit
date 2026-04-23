@@ -1,8 +1,12 @@
 modules = ["nodejs-24", "postgresql-16"]
 
 [deployment]
-router = "application"
+router = "action-server"
 deploymentTarget = "autoscale"
+
+[[actions]]
+path = "/openapi.yaml"
+# This provides the tool definitions for the agent
 
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
