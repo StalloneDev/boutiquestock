@@ -103,7 +103,7 @@ export function StockEntryForm({ products }: StockEntryFormProps) {
 
           <Button type="submit" className="w-full gap-2" disabled={loading || !selectedProductId}>
             {loading ? <Loader2 className="animate-spin" size={18} /> : <PlusCircle size={18} />}
-            Valider l'entrée de stock
+            Valider l&apos;entrée de stock
           </Button>
         </form>
       </CardContent>

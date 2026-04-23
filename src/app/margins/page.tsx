@@ -18,7 +18,7 @@ export default async function MarginsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-none shadow-sm bg-white ring-1 ring-slate-200">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Valeur d'Achat (Coût)</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Valeur d&apos;Achat (Coût)</CardTitle>
             <Wallet className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
@@ -34,7 +34,7 @@ export default async function MarginsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-blue-600">{formatCurrency(analysis.totalRevenue)}</div>
-            <p className="text-[10px] text-slate-500 mt-1">Chiffre d'affaires si tout est vendu</p>
+            <p className="text-[10px] text-slate-500 mt-1">Chiffre d&apos;affaires si tout est vendu</p>
           </CardContent>
         </Card>
 

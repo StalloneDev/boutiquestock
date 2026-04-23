@@ -63,7 +63,7 @@ export function SupplierDialog() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nom de l'entreprise</Label>
+              <Label htmlFor="name">Nom de l&apos;entreprise</Label>
               <Input id="name" name="name" placeholder="Ex: Boutique Grossiste SARL" required disabled={loading} />
             </div>
             <div className="grid gap-2">

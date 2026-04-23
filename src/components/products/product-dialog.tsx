@@ -141,7 +141,7 @@ export function ProductDialog({ categories, product, children }: ProductDialogPr
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="lowStockThreshold">Seuil d'alerte</Label>
+              <Label htmlFor="lowStockThreshold">Seuil d&apos;alerte</Label>
               <Input 
                 id="lowStockThreshold" 
                 name="lowStockThreshold" 
@@ -153,7 +153,7 @@ export function ProductDialog({ categories, product, children }: ProductDialogPr
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="unitCostPrice">Prix d'achat (Unitaire)</Label>
+              <Label htmlFor="unitCostPrice">Prix d&apos;achat (Unitaire)</Label>
               <Input 
                 id="unitCostPrice" 
                 name="unitCostPrice" 

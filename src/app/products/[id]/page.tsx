@@ -68,7 +68,7 @@ export default async function ProductDetailsPage({
             <CardContent className="p-6 border-t bg-slate-50/50">
                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                  <div>
-                   <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Prix d'achat</p>
+                   <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Prix d&apos;achat</p>
                    <p className="text-lg font-semibold">{formatCurrency(product.unitCostPrice)}</p>
                  </div>
                  <div>
@@ -150,7 +150,7 @@ export default async function ProductDetailsPage({
                 <span className="font-mono text-xs">{product.barcode || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center text-sm py-2 border-b border-dashed">
-                <span className="text-slate-500">Seuil d'alerte</span>
+                <span className="text-slate-500">Seuil d&apos;alerte</span>
                 <span className="font-bold flex items-center gap-1">
                   <AlertTriangle size={14} className="text-orange-500" /> {product.lowStockThreshold}
                 </span>
