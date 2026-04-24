@@ -61,7 +61,7 @@ export function MarginCharts({ data }: MarginChartsProps) {
               <Tooltip 
                 cursor={{ fill: 'rgba(59,130,246,0.05)' }}
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                formatter={(value: number) => [formatCurrency(value), ""]}
+                formatter={(value) => [formatCurrency(Number(value ?? 0)), ""]}
               />
               <Bar dataKey="cost" name="Coût Total" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
               <Bar dataKey="revenue" name="Revenu Potentiel" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -85,15 +85,15 @@ export function MarginCharts({ data }: MarginChartsProps) {
                 innerRadius={60}
                 outerRadius={100}
                 paddingAngle={5}
-                label={({ name, margin }) => `${name} (${margin}%)`}
+                label={({ name, payload }: { name?: string; payload?: { margin?: number } }) => `${name} (${payload?.margin ?? 0}%)`}
               >
                 {data.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip 
-                formatter={(value: number, name: string, props: any) => [
-                  `${formatCurrency(value)} (Marge: ${props.payload.margin}%)`,
+                formatter={(value, name, props) => [
+                  `${formatCurrency(Number(value ?? 0))} (Marge: ${(props as any)?.payload?.margin ?? 0}%)`,
                   name
                 ]}
               />
