@@ -76,7 +76,7 @@ export default async function MarginsPage() {
                   <th className="px-6 py-4">Catégorie</th>
                   <th className="px-6 py-4 text-right">Investissement</th>
                   <th className="px-6 py-4 text-right">Revenu Est.</th>
-                  <th className="px-6 py-4 text-right">Profit Est.</th>
+                  <th className="px-6 py-4 text-right">Marge</th>
                   <th className="px-6 py-4 text-right">Marge %</th>
                 </tr>
               </thead>

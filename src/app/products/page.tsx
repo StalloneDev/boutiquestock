@@ -8,6 +8,8 @@ import { formatCurrency } from "@/lib/format";
 import { ProductDialog } from "@/components/products/product-dialog";
 import { ProductActions } from "@/components/products/product-actions";
 
+import { ProductFilters } from "@/components/products/product-filters";
+
 export default async function ProductsPage({
   searchParams,
 }: {
@@ -32,21 +34,7 @@ export default async function ProductsPage({
         <ProductDialog categories={categories} />
       </div>
 
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un produit..." className="pl-9" />
-        </div>
-        <select 
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          value={categoryId || ""}
-        >
-          <option value="">Toutes les catégories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
+      <ProductFilters categories={categories} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((p) => (
