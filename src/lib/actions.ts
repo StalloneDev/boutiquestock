@@ -324,14 +324,44 @@ export async function cancelSale(saleId: number) {
   return true;
 }
 
-// Session Actions
 export async function getActiveSession() {
   const [session] = await db
     .select()
     .from(cashRegisterSessionsTable)
     .where(eq(cashRegisterSessionsTable.status, "open"))
     .limit(1);
-  return session || null;
+
+  if (!session) return null;
+
+  // AUTO CLOSE LAZY EVALUATION (23:30 threshold)
+  const now = new Date();
+  let threshold = new Date(session.openingTime);
+  threshold.setHours(23, 30, 0, 0);
+  if (new Date(session.openingTime) >= threshold) {
+    threshold.setDate(threshold.getDate() + 1);
+  }
+
+  if (now >= threshold) {
+    // It's past 23:30 of the active session's scope, auto-close it!
+    const _sales = await db.select().from(salesTable).where(and(eq(salesTable.sessionId, session.id), eq(salesTable.status, "completed")));
+    const _totalSales = _sales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
+    const _exp = await db.select().from(expensesTable).where(and(eq(expensesTable.sessionId, session.id), eq(expensesTable.status, "completed")));
+    const _totalExp = _exp.reduce((sum, e) => sum + Number(e.amount), 0);
+    const _closingBalance = Number(session.openingBalance) + _totalSales - _totalExp;
+
+    await db.update(cashRegisterSessionsTable)
+      .set({
+        status: "closed",
+        closingTime: now,
+        closingBalance: String(_closingBalance),
+        notes: "Clôture automatique (23h30)",
+      })
+      .where(eq(cashRegisterSessionsTable.id, session.id));
+
+    return null;
+  }
+
+  return session;
 }
 
 export async function openSession(openingBalance: number) {
@@ -601,4 +631,94 @@ export async function deleteUser(id: number) {
   await db.delete(usersTable).where(eq(usersTable.id, id));
   revalidatePath("/employees");
   return { success: true };
+}
+
+// -------------------------------------------------------------
+// EXPENSES & CASH REGISTER SUMMARY
+// -------------------------------------------------------------
+import { expensesTable } from "@/db/schema/expenses";
+
+export async function addExpense(data: { amount: number; reason: string }) {
+  const session = await getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Non autorisé");
+
+  const [activeSession] = await db
+    .select()
+    .from(cashRegisterSessionsTable)
+    .where(eq(cashRegisterSessionsTable.status, "open"));
+
+  if (!activeSession) throw new Error("Aucune session de caisse ouverte");
+
+  const [expense] = await db.insert(expensesTable).values({
+    sessionId: activeSession.id,
+    userId: userId,
+    amount: String(data.amount),
+    reason: data.reason,
+  }).returning();
+
+  revalidatePath("/pos");
+  revalidatePath("/cash-register");
+  return expense;
+}
+
+export async function getActiveCashRegisterStatus() {
+  const [activeSession] = await db
+    .select()
+    .from(cashRegisterSessionsTable)
+    .where(eq(cashRegisterSessionsTable.status, "open"));
+
+  // Check lazy closing even inside here to prevent desynchronization
+  if (!activeSession) return null;
+  const sysActiveSession = await getActiveSession(); // Re-trigger the lazy check
+  if (!sysActiveSession) return null;
+
+  // Total ventes (seulement le cash, mais ici tout est en cash ou "completed")
+  const sales = await db
+    .select({ totalAmount: salesTable.totalAmount })
+    .from(salesTable)
+    .where(and(eq(salesTable.sessionId, activeSession.id), eq(salesTable.status, "completed")));
+
+  const totalSales = sales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
+
+  // Total dépenses (seulement les validées)
+  const expenses = await db
+    .select({
+      id: expensesTable.id,
+      amount: expensesTable.amount,
+      reason: expensesTable.reason,
+      createdAt: expensesTable.createdAt,
+      status: expensesTable.status,
+      userName: usersTable.name,
+    })
+    .from(expensesTable)
+    .leftJoin(usersTable, eq(expensesTable.userId, usersTable.id))
+    .where(and(eq(expensesTable.sessionId, activeSession.id), eq(expensesTable.status, "completed")))
+    .orderBy(desc(expensesTable.createdAt));
+
+  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+
+  const initialAmount = Number(activeSession.openingBalance) || 0;
+  const theoreticalBalance = initialAmount + totalSales - totalExpenses;
+
+  return {
+    session: activeSession,
+    totalSales,
+    totalExpenses,
+    theoreticalBalance,
+    expensesList: expenses,
+  };
+}
+
+export async function cancelExpense(id: number) {
+  const sessionUser = await getSession();
+  const userId = sessionUser?.user?.id;
+  if (!userId) throw new Error("Non autorisé");
+
+  await db.update(expensesTable)
+    .set({ status: "cancelled" })
+    .where(eq(expensesTable.id, id));
+
+  revalidatePath("/cash-register");
+  return true;
 }

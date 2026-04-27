@@ -15,6 +15,7 @@ import {
   FileText,
   Share2,
   LogOut,
+  Wallet,
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ const navigation = [
     title: "Ventes",
     items: [
       { href: "/pos", label: "Caisse", icon: ShoppingCart },
+      { href: "/cash-register", label: "État de la caisse", icon: Wallet },
       { href: "/sales", label: "Historique ventes", icon: History },
     ]
   },
@@ -59,7 +61,7 @@ const navigation = [
     ]
   }
 ]
-  
+
 
 
 export function Sidebar({ onLinkClick, role }: { onLinkClick?: () => void; role?: string }) {
@@ -88,15 +90,15 @@ export function Sidebar({ onLinkClick, role }: { onLinkClick?: () => void; role?
   };
 
   return (
-    <div className="flex flex-col w-72 bg-slate-900 text-white min-h-screen border-r border-slate-800">
-      <div className="p-8">
-        <h1 className="text-2xl font-black tracking-tighter text-blue-500">STOCK MANAGER</h1>
+    <div className="flex flex-col w-72 bg-slate-900 text-white h-[100dvh] border-r border-slate-800 shrink-0">
+      <div className="p-4 md:p-6 pb-2">
+        <h1 className="text-xl md:text-2xl font-black tracking-tighter text-blue-500">STOCK MANAGER</h1>
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">Édition Boutique</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-8">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
         {dynamicNavigation.map((group) => (
-          <div key={group.title} className="space-y-2">
+          <div key={group.title} className="space-y-1">
             <h2 className="px-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
               {group.title}
             </h2>
@@ -109,7 +111,7 @@ export function Sidebar({ onLinkClick, role }: { onLinkClick?: () => void; role?
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center justify-between px-4 py-2.5 rounded-lg transition-all group",
+                      "flex items-center justify-between px-3 py-1.5 rounded-lg transition-all group",
                       isActive
                         ? "bg-blue-600/10 text-blue-400 border border-blue-500/20"
                         : "text-slate-400 hover:bg-white/5 hover:text-white"
@@ -129,9 +131,9 @@ export function Sidebar({ onLinkClick, role }: { onLinkClick?: () => void; role?
         ))}
       </div>
 
-      <div className="p-6 mt-auto border-t border-slate-800/50">
-        <div className="bg-slate-800/40 rounded-xl p-4 flex items-center gap-3 border border-white/5">
-          <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-xs">
+      <div className="p-4 mt-auto border-t border-slate-800/50">
+        <div className="bg-slate-800/40 rounded-xl p-3 flex items-center gap-3 border border-white/5">
+          <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-[10px]">
             {role === "admin" ? "AD" : "CA"}
           </div>
           <div className="flex-1 min-w-0">

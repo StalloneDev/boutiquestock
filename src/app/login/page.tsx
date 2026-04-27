@@ -120,7 +120,7 @@ export default function LoginPage() {
             </form>
             <div className="mt-4 text-center">
               <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">
-                Sécurisé par Asset-Analyser v1.0
+                Developpé par KJS v2.0
               </p>
             </div>
           </CardContent>

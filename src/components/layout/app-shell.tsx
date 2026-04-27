@@ -23,7 +23,7 @@ export function AppShell({ children, role }: { children: React.ReactNode, role?:
   }
 
   return (
-    <div className="flex h-full min-h-screen relative">
+    <div className="flex h-full min-h-[100dvh] relative">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
