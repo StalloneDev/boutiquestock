@@ -18,5 +18,5 @@ export const productVariantsTable = pgTable("product_variants", {
 });
 
 export const insertProductVariantSchema = createInsertSchema(productVariantsTable).omit({ id: true, createdAt: true, updatedAt: true });
-export type InsertProductVariant = z.infer<typeof insertProductVariantSchema>;
+export type InsertProductVariant = typeof productVariantsTable.$inferInsert;
 export type ProductVariant = typeof productVariantsTable.$inferSelect;

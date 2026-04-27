@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  History, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  History,
+  Settings,
   Truck,
   Layers,
   TrendingUp,
@@ -55,14 +55,26 @@ const navigation = [
   {
     title: "Public",
     items: [
-      { href: "/public-catalog", label: "Catalogue partageable", icon: Share2 },
+      { href: "/preview-catalog", label: "Catalogue partageable", icon: Share2 },
     ]
   }
-];
+]
+  
 
-export function Sidebar() {
+
+export function Sidebar({ onLinkClick, role }: { onLinkClick?: () => void; role?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+
+  const dynamicNavigation = [
+    ...navigation,
+    ...(role === "admin" ? [{
+      title: "Administration",
+      items: [
+        { href: "/employees", label: "Équipe & Accès", icon: Settings },
+      ]
+    }] : [])
+  ];
 
   const handleLogout = async () => {
     try {
@@ -83,7 +95,7 @@ export function Sidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-8">
-        {navigation.map((group) => (
+        {dynamicNavigation.map((group) => (
           <div key={group.title} className="space-y-2">
             <h2 className="px-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
               {group.title}
@@ -98,10 +110,11 @@ export function Sidebar() {
                     href={item.href}
                     className={cn(
                       "flex items-center justify-between px-4 py-2.5 rounded-lg transition-all group",
-                      isActive 
-                        ? "bg-blue-600/10 text-blue-400 border border-blue-500/20" 
+                      isActive
+                        ? "bg-blue-600/10 text-blue-400 border border-blue-500/20"
                         : "text-slate-400 hover:bg-white/5 hover:text-white"
                     )}
+                    onClick={onLinkClick}
                   >
                     <div className="flex items-center gap-3">
                       <Icon size={18} className={cn(isActive ? "text-blue-400" : "text-slate-500 group-hover:text-white")} />
@@ -118,12 +131,14 @@ export function Sidebar() {
 
       <div className="p-6 mt-auto border-t border-slate-800/50">
         <div className="bg-slate-800/40 rounded-xl p-4 flex items-center gap-3 border border-white/5">
-          <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-xs">SK</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold truncate">Admin Boutique</p>
-            <p className="text-[10px] text-slate-500 truncate">sk@manager.com</p>
+          <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-xs">
+            {role === "admin" ? "AD" : "CA"}
           </div>
-          <button 
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold truncate">{role === "admin" ? "Administrateur" : "Caissier"}</p>
+            <p className="text-[10px] text-slate-500 truncate">Secteur Connecté</p>
+          </div>
+          <button
             onClick={handleLogout}
             className="text-slate-500 hover:text-red-400 transition-colors"
             title="Se déconnecter"

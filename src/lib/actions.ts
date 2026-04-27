@@ -2,8 +2,8 @@
 
 import { db } from "@/db";
 import { cache } from "react";
-import { productsTable, categoriesTable, salesTable, stockMovementsTable, productVariantsTable, purchaseOrdersTable, purchaseOrderItemsTable } from "@/db";
-import { eq, ilike, and, or, sql, desc } from "drizzle-orm";
+import { productsTable, categoriesTable, salesTable, stockMovementsTable, productVariantsTable, purchaseOrdersTable, purchaseOrderItemsTable, cashRegisterSessionsTable, usersTable } from "@/db";
+import { eq, ilike, and, or, sql, desc, isNull } from "drizzle-orm";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 // Cache tags constants
@@ -102,6 +102,7 @@ export async function updateProduct(id: number, data: any) {
       lowStockThreshold: data.lowStockThreshold ?? 2,
       notes: data.notes ?? null,
       barcode: data.barcode ?? null,
+      imageUrl: data.imageUrl !== undefined ? data.imageUrl : null,
       updatedAt: new Date(),
     })
     .where(eq(productsTable.id, id))
@@ -205,8 +206,23 @@ export async function deleteCategory(id: number) {
   revalidatePath("/products");
 }
 
+import { gte, lte } from "drizzle-orm";
+import { getSession } from "@/lib/session";
+
 // Sales Actions
-export async function getSales() {
+export async function getSales(filters?: { from?: string; to?: string }) {
+  const conditions = [];
+
+  if (filters?.from) {
+    conditions.push(gte(salesTable.createdAt, new Date(filters.from)));
+  }
+
+  if (filters?.to) {
+    const toDate = new Date(filters.to);
+    toDate.setHours(23, 59, 59, 999);
+    conditions.push(lte(salesTable.createdAt, toDate));
+  }
+
   return await db
     .select({
       id: salesTable.id,
@@ -215,10 +231,14 @@ export async function getSales() {
       quantity: salesTable.quantity,
       unitPrice: salesTable.unitPrice,
       totalAmount: salesTable.totalAmount,
+      status: salesTable.status,
       createdAt: salesTable.createdAt,
+      cashierName: usersTable.name,
     })
     .from(salesTable)
     .innerJoin(productsTable, eq(salesTable.productId, productsTable.id))
+    .leftJoin(usersTable, eq(salesTable.cashierId, usersTable.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(salesTable.createdAt));
 }
 
@@ -227,16 +247,25 @@ export async function recordSale(data: { productId: number; quantity: number; un
   if (!product) throw new Error("Product not found");
   if (product.quantity < data.quantity) throw new Error("Insufficient stock");
 
+  const [activeSession] = await db.select().from(cashRegisterSessionsTable).where(eq(cashRegisterSessionsTable.status, "open"));
+  if (!activeSession) throw new Error("Aucune session de caisse ouverte");
+
   const totalAmount = data.unitPrice * data.quantity;
   const quantityBefore = product.quantity;
   const quantityAfter = quantityBefore - data.quantity;
 
+  const session = await getSession();
+  const userId = session?.user?.id;
+
   const [sale] = await db.insert(salesTable).values({
+    sessionId: activeSession.id,
     productId: data.productId,
     quantity: data.quantity,
     unitPrice: String(data.unitPrice),
     totalAmount: String(totalAmount),
+    status: "completed",
     notes: data.notes ?? null,
+    cashierId: userId ?? null,
   }).returning();
 
   await db.update(productsTable)
@@ -256,6 +285,90 @@ export async function recordSale(data: { productId: number; quantity: number; un
   revalidatePath("/products");
   revalidatePath("/sales");
   return sale;
+}
+
+export async function cancelSale(saleId: number) {
+  const [sale] = await db.select().from(salesTable).where(eq(salesTable.id, saleId));
+  if (!sale) throw new Error("Vente non trouvée");
+  if (sale.status === "cancelled") throw new Error("Vente déjà annulée");
+
+  const [product] = await db.select().from(productsTable).where(eq(productsTable.id, sale.productId));
+  if (!product) throw new Error("Produit associé introuvable");
+
+  const quantityBefore = product.quantity;
+  const quantityAfter = quantityBefore + sale.quantity;
+
+  // Update sale status
+  await db.update(salesTable)
+    .set({ status: "cancelled", updatedAt: new Date() } as any)
+    .where(eq(salesTable.id, saleId));
+
+  // Restore stock
+  await db.update(productsTable)
+    .set({ quantity: quantityAfter, updatedAt: new Date() })
+    .where(eq(productsTable.id, product.id));
+
+  // Record stock movement
+  await db.insert(stockMovementsTable).values({
+    productId: product.id,
+    type: "entry",
+    delta: sale.quantity,
+    quantityBefore,
+    quantityAfter,
+    reason: `Annulation vente #${sale.id}`,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/products");
+  revalidatePath("/sales");
+  return true;
+}
+
+// Session Actions
+export async function getActiveSession() {
+  const [session] = await db
+    .select()
+    .from(cashRegisterSessionsTable)
+    .where(eq(cashRegisterSessionsTable.status, "open"))
+    .limit(1);
+  return session || null;
+}
+
+export async function openSession(openingBalance: number) {
+  const activeSession = await getActiveSession();
+  if (activeSession) throw new Error("Une session est déjà ouverte.");
+
+  const [session] = await db.insert(cashRegisterSessionsTable).values({
+    openingBalance: String(openingBalance),
+    status: "open",
+  }).returning();
+
+  revalidatePath("/pos");
+  return session;
+}
+
+export async function closeSession(sessionId: number, closingBalance: number, notes?: string) {
+  const [session] = await db.update(cashRegisterSessionsTable)
+    .set({
+      status: "closed",
+      closingTime: new Date(),
+      closingBalance: String(closingBalance),
+      notes: notes ?? null,
+    })
+    .where(eq(cashRegisterSessionsTable.id, sessionId))
+    .returning();
+
+  revalidatePath("/pos");
+  return session;
+}
+
+export async function getSessionSales(sessionId: number) {
+  const sales = await db
+    .select()
+    .from(salesTable)
+    .where(and(eq(salesTable.sessionId, sessionId), eq(salesTable.status, "completed")));
+
+  return sales;
 }
 
 export async function getSuppliers() {
@@ -423,9 +536,69 @@ export const getMarginAnalysis = async () => {
 export async function getDashboardStats() {
   const [productsCount] = await db.select({ count: sql<number>`count(*)` }).from(productsTable);
   const [totalStockValue] = await db.select({ value: sql<number>`sum(cast(${productsTable.unitCostPrice} as decimal) * ${productsTable.quantity})` }).from(productsTable);
-  
+
   return {
     productCount: Number(productsCount.count),
     stockValue: Number(totalStockValue.value || 0),
   };
+}
+
+// -------------------------------------------------------------
+// EMPLOYEE / USERS ACTIONS
+// -------------------------------------------------------------
+
+import { hashPassword } from "./auth";
+
+export async function getUsers() {
+  return await db.select({
+    id: usersTable.id,
+    name: usersTable.name,
+    username: usersTable.username,
+    role: usersTable.role,
+    createdAt: usersTable.createdAt,
+  }).from(usersTable).orderBy(usersTable.name);
+}
+
+export async function createUser(data: any) {
+  const [created] = await db.insert(usersTable).values({
+    name: data.name,
+    username: data.username,
+    password: hashPassword(data.password),
+    role: data.role,
+  }).returning({
+    id: usersTable.id,
+    name: usersTable.name,
+    role: usersTable.role,
+  });
+
+  revalidatePath("/employees");
+  return created;
+}
+
+export async function updateUser(id: number, data: any) {
+  const updateData: any = {
+    name: data.name,
+    username: data.username,
+    role: data.role,
+  };
+
+  if (data.password && data.password.trim() !== "") {
+    updateData.password = hashPassword(data.password);
+  }
+
+  const [updated] = await db.update(usersTable)
+    .set(updateData)
+    .where(eq(usersTable.id, id))
+    .returning({
+      id: usersTable.id,
+    });
+
+  revalidatePath("/employees");
+  return updated;
+}
+
+export async function deleteUser(id: number) {
+  await db.delete(usersTable).where(eq(usersTable.id, id));
+  revalidatePath("/employees");
+  return { success: true };
 }

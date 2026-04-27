@@ -14,21 +14,25 @@ const geistMono = Geist_Mono({
 });
 
 import { AppShell } from "@/components/layout/app-shell";
+import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Asset Analyser | Stock Manager",
   description: "Système de gestion de stock premium",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+  const role = session?.user?.role;
+
   return (
     <html lang="fr" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} h-full antialiased text-slate-900`}>
-        <AppShell>{children}</AppShell>
+        <AppShell role={role}>{children}</AppShell>
       </body>
     </html>
   );

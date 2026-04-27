@@ -7,8 +7,9 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/format";
 import { ProductDialog } from "@/components/products/product-dialog";
 import { ProductActions } from "@/components/products/product-actions";
-
 import { ProductFilters } from "@/components/products/product-filters";
+import { BarcodePrinter } from "@/components/products/barcode-printer";
+import Image from "next/image";
 
 export default async function ProductsPage({
   searchParams,
@@ -38,9 +39,16 @@ export default async function ProductsPage({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((p) => (
-          <Card key={p.id} className="overflow-hidden group hover:border-primary/50 transition-colors">
+          <Card key={p.id} className="overflow-hidden group hover:border-primary/50 transition-colors flex flex-col">
+            {p.imageUrl ? (
+              <div className="relative w-full h-40 bg-slate-100 border-b">
+                <Image src={p.imageUrl} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+              </div>
+            ) : (
+              <div className="w-full h-8 bg-slate-50 border-b" />
+            )}
             <CardHeader className="p-4 pb-2">
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start mb-2">
                 <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
                   {p.name}
                 </CardTitle>
@@ -48,6 +56,7 @@ export default async function ProductsPage({
                   <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${p.quantity <= p.lowStockThreshold ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
                     {p.quantity} en stock
                   </div>
+                  <BarcodePrinter product={p} />
                   <ProductActions product={p} categories={categories} />
                 </div>
               </div>

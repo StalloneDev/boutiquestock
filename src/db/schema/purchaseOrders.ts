@@ -26,7 +26,7 @@ export const purchaseOrderItemsTable = pgTable("purchase_order_items", {
 
 export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrdersTable).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderItemsTable).omit({ id: true });
-export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
-export type InsertPurchaseOrderItem = z.infer<typeof insertPurchaseOrderItemSchema>;
+export type InsertPurchaseOrder = typeof purchaseOrdersTable.$inferInsert;
+export type InsertPurchaseOrderItem = typeof purchaseOrderItemsTable.$inferInsert;
 export type PurchaseOrder = typeof purchaseOrdersTable.$inferSelect;
 export type PurchaseOrderItem = typeof purchaseOrderItemsTable.$inferSelect;

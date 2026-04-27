@@ -10,6 +10,6 @@ export const categoriesTable = pgTable("categories", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const insertCategorySchema = createInsertSchema(categoriesTable).omit({ id: true, createdAt: true }) as z.ZodTypeAny;
-export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export const insertCategorySchema = createInsertSchema(categoriesTable).omit({ id: true, createdAt: true });
+export type InsertCategory = typeof categoriesTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;

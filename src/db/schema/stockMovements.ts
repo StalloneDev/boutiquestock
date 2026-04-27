@@ -19,5 +19,5 @@ export const stockMovementsTable = pgTable("stock_movements", {
 });
 
 export const insertStockMovementSchema = createInsertSchema(stockMovementsTable).omit({ id: true, createdAt: true });
-export type InsertStockMovement = z.infer<typeof insertStockMovementSchema>;
+export type InsertStockMovement = typeof stockMovementsTable.$inferInsert;
 export type StockMovement = typeof stockMovementsTable.$inferSelect;
