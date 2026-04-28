@@ -288,6 +288,11 @@ export async function recordSale(data: { productId: number; quantity: number; un
 }
 
 export async function cancelSale(saleId: number) {
+  const sessionUser = await getSession();
+  const userRole = sessionUser?.user?.role;
+
+  if (userRole !== "admin") throw new Error("Seuls les administrateurs peuvent annuler des ventes.");
+
   const [sale] = await db.select().from(salesTable).where(eq(salesTable.id, saleId));
   if (!sale) throw new Error("Vente non trouvée");
   if (sale.status === "cancelled") throw new Error("Vente déjà annulée");
@@ -333,16 +338,17 @@ export async function getActiveSession() {
 
   if (!session) return null;
 
-  // AUTO CLOSE LAZY EVALUATION (23:30 threshold)
+  // AUTO CLOSE LAZY EVALUATION (00:00 threshold)
   const now = new Date();
   let threshold = new Date(session.openingTime);
-  threshold.setHours(23, 30, 0, 0);
-  if (new Date(session.openingTime) >= threshold) {
+  threshold.setHours(0, 0, 0, 0);
+  // If the opening time was already today, we want the *next* midnight
+  if (now >= threshold) {
     threshold.setDate(threshold.getDate() + 1);
   }
 
   if (now >= threshold) {
-    // It's past 23:30 of the active session's scope, auto-close it!
+    // It's past midnight since the session opened, auto-close it!
     const _sales = await db.select().from(salesTable).where(and(eq(salesTable.sessionId, session.id), eq(salesTable.status, "completed")));
     const _totalSales = _sales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
     const _exp = await db.select().from(expensesTable).where(and(eq(expensesTable.sessionId, session.id), eq(expensesTable.status, "completed")));
@@ -354,7 +360,7 @@ export async function getActiveSession() {
         status: "closed",
         closingTime: now,
         closingBalance: String(_closingBalance),
-        notes: "Clôture automatique (23h30)",
+        notes: "Clôture automatique (Minuit)",
       })
       .where(eq(cashRegisterSessionsTable.id, session.id));
 
@@ -368,9 +374,13 @@ export async function openSession(openingBalance: number) {
   const activeSession = await getActiveSession();
   if (activeSession) throw new Error("Une session est déjà ouverte.");
 
+  const sessionUser = await getSession();
+  const userId = sessionUser?.user?.id;
+
   const [session] = await db.insert(cashRegisterSessionsTable).values({
     openingBalance: String(openingBalance),
     status: "open",
+    openedBy: userId ?? null,
   }).returning();
 
   revalidatePath("/pos");
@@ -378,18 +388,53 @@ export async function openSession(openingBalance: number) {
 }
 
 export async function closeSession(sessionId: number, closingBalance: number, notes?: string) {
+  const sessionUser = await getSession();
+  const userId = sessionUser?.user?.id;
+
   const [session] = await db.update(cashRegisterSessionsTable)
     .set({
       status: "closed",
       closingTime: new Date(),
       closingBalance: String(closingBalance),
       notes: notes ?? null,
+      closedBy: userId ?? null,
     })
     .where(eq(cashRegisterSessionsTable.id, sessionId))
     .returning();
 
   revalidatePath("/pos");
   return session;
+}
+
+export async function getSessionHistory(filters?: { from?: string; to?: string }) {
+  let query = db
+    .select({
+      id: cashRegisterSessionsTable.id,
+      status: cashRegisterSessionsTable.status,
+      openingTime: cashRegisterSessionsTable.openingTime,
+      closingTime: cashRegisterSessionsTable.closingTime,
+      openingBalance: cashRegisterSessionsTable.openingBalance,
+      closingBalance: cashRegisterSessionsTable.closingBalance,
+      notes: cashRegisterSessionsTable.notes,
+      openedByName: usersTable.name,
+    })
+    .from(cashRegisterSessionsTable)
+    .leftJoin(usersTable, eq(cashRegisterSessionsTable.openedBy, usersTable.id));
+
+  const conditions = [];
+  if (filters?.from) conditions.push(gte(cashRegisterSessionsTable.openingTime, new Date(filters.from)));
+  if (filters?.to) {
+    const toDate = new Date(filters.to);
+    toDate.setHours(23, 59, 59, 999);
+    conditions.push(lte(cashRegisterSessionsTable.openingTime, toDate));
+  }
+
+  if (conditions.length > 0) {
+    // @ts-ignore
+    query = query.where(and(...conditions));
+  }
+
+  return await query.orderBy(desc(cashRegisterSessionsTable.openingTime));
 }
 
 export async function getSessionSales(sessionId: number) {
@@ -713,7 +758,9 @@ export async function getActiveCashRegisterStatus() {
 export async function cancelExpense(id: number) {
   const sessionUser = await getSession();
   const userId = sessionUser?.user?.id;
-  if (!userId) throw new Error("Non autorisé");
+  const userRole = sessionUser?.user?.role;
+
+  if (!userId || userRole !== "admin") throw new Error("Seuls les administrateurs peuvent annuler des dépenses.");
 
   await db.update(expensesTable)
     .set({ status: "cancelled" })

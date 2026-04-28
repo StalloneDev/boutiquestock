@@ -7,6 +7,8 @@ import { fr } from "date-fns/locale";
 import { CancelSaleButton } from "@/components/sales/cancel-button";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getSession } from "@/lib/session";
+import { cn } from "@/lib/utils";
 
 export default async function SalesPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const resolvedParams = await searchParams;
@@ -14,6 +16,8 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
   const toDate = resolvedParams.to;
 
   const sales = await getSales({ from: fromDate, to: toDate });
+  const userSession = await getSession();
+  const isAdmin = userSession?.user?.role === "admin";
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -67,7 +71,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
                       </p>
                     </div>
                     <div>
-                      <CancelSaleButton saleId={sale.id} status={sale.status || "completed"} />
+                      <CancelSaleButton saleId={sale.id} status={sale.status || "completed"} isAdmin={isAdmin} />
                     </div>
                   </div>
 
@@ -130,7 +134,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
                         {formatCurrency(sale.totalAmount)}
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <CancelSaleButton saleId={sale.id} status={sale.status || "completed"} />
+                        <CancelSaleButton saleId={sale.id} status={sale.status || "completed"} isAdmin={isAdmin} />
                       </td>
                     </tr>
                   ))

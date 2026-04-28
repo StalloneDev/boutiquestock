@@ -7,9 +7,11 @@ import { cancelExpense } from "@/lib/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-export function CancelExpenseBtn({ id }: { id: number }) {
+export function CancelExpenseBtn({ id, isAdmin }: { id: number, isAdmin?: boolean }) {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    if (!isAdmin) return null;
 
     async function handleCancel() {
         if (!confirm("Voulez-vous vraiment annuler cette sortie de caisse ? Les fonds seront rétablis dans le tiroir caisse.")) return;

@@ -6,8 +6,10 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { cancelSale } from "@/lib/actions";
 
-export function CancelSaleButton({ saleId, status }: { saleId: number; status: string }) {
+export function CancelSaleButton({ saleId, status, isAdmin }: { saleId: number; status: string; isAdmin?: boolean }) {
   const [isProcessing, setIsProcessing] = useState(false);
+
+  if (!isAdmin && status !== "cancelled") return null;
 
   // Fallback si status undefined au tout début, on considère completed
   const isCancelled = status === "cancelled";
