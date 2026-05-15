@@ -6,10 +6,17 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'BoutiqueStock',
     description: 'Système premium de gestion de stock et point de vente',
     start_url: '/',
+    id: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#0f172a',
     theme_color: '#3b82f6',
     icons: [
+      {
+        src: '/icon.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
       {
         src: '/icon.png',
         sizes: '512x512',
