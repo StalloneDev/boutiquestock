@@ -34,7 +34,6 @@ async function main() {
       await tx.execute(sql`TRUNCATE TABLE ${expensesTable} CASCADE`);
       await tx.execute(sql`TRUNCATE TABLE ${discountLogsTable} CASCADE`);
       await tx.execute(sql`TRUNCATE TABLE ${cashRegisterSessionsTable} CASCADE`);
-      await tx.execute(sql`TRUNCATE TABLE ${usersTable} CASCADE`);
     });
 
     console.log("✅ Base de données vidée avec succès !");
