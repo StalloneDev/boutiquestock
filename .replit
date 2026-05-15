@@ -1,0 +1,39 @@
+modules = ["nodejs-24", "postgresql-16"]
+
+[deployment]
+router = "action-server"
+deploymentTarget = "autoscale"
+
+[[actions]]
+path = "/openapi.yaml"
+# This provides the tool definitions for the agent
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[nix]
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 26041
+externalPort = 80
