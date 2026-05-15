@@ -1,4 +1,6 @@
-// Basic Service Worker for PWA installability
+// Simple Service Worker for PWA
+const CACHE_NAME = 'boutiquestock-cache-v1';
+
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
@@ -8,6 +10,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Pass-through for now
-  event.respondWith(fetch(event.request));
+  // Requirement for PWA installability: must have a fetch handler
+  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
 });

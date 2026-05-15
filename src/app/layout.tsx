@@ -20,7 +20,6 @@ import { Viewport } from "next";
 export const metadata: Metadata = {
   title: "BoutiqueStock | Gestion d'Inventaire Premium",
   description: "Système premium de gestion de stock et point de vente",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
